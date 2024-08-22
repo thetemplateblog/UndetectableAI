@@ -1,0 +1,57 @@
+{
+  "name": "humanizeContent",
+  "parameters": {
+    "type": "object",
+    "required": [
+      "APIKey",
+      "keyword"
+    ],
+    "properties": {
+      "APIKey": {
+        "type": "string",
+        "format": "password",
+        "description": "API Key for accessing the humanization service."
+      },
+      "keyword": {
+        "type": "string",
+        "description": "The search keyword"
+      },
+      "purpose": {
+        "enum": [
+          "General Writing",
+          "Essay",
+          "Article",
+          "Marketing Material",
+          "Story",
+          "Cover Letter",
+          "Report",
+          "Business Material",
+          "Legal Material"
+        ],
+        "type": "string",
+        "description": "Default purpose for the text. Optional, default: \"General Writing\""
+      },
+      "strength": {
+        "enum": [
+          "Quality",
+          "Balanced",
+          "More Human"
+        ],
+        "type": "string",
+        "description": "Increases aggressiveness of humanization algorithms. Optional, default: \"Balanced\""
+      },
+      "readability": {
+        "enum": [
+          "High School",
+          "University",
+          "Doctorate",
+          "Journalist",
+          "Marketing"
+        ],
+        "type": "string",
+        "description": "Default readability level. Optional, default: \"High School\""
+      }
+    }
+  },
+  "description": "Configure the humanization settings for the Undetectable.AI API."
+}
