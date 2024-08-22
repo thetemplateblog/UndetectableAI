@@ -1,0 +1,116 @@
+{
+    "id": "humanizeContent",
+    "code": "function humanizeContent(params, userSettings) {\n  return new Promise((resolve, reject) => {\n    // Ensure required parameters are provided\n    if (!params || !userSettings) {\n      console.error(\"Missing input parameters or user settings.\");\n      return reject(\"Missing input parameters or user settings.\");\n    }\n\n    const keyword = params.keyword || \"YOUR TEXT GOES HERE. PLEASE MAKE SURE IT IS AT LEAST 50 CHARACTERS LONG.\";\n    const APIKey = userSettings.APIKey;\n    if (!APIKey) {\n      console.error(\"Missing API Key in user settings.\");\n      return reject(\"Missing API Key in user settings.\");\n    }\n    \n    const readability = userSettings.readability || \"High School\";\n    const purpose = userSettings.purpose || \"General Writing\";\n    const strength = userSettings.strength || \"Balanced\";\n\n    var myHeaders = new Headers();\n    myHeaders.append(\"api-key\", APIKey);\n    myHeaders.append(\"Content-Type\", \"application/json\");\n\n    const raw = JSON.stringify({\n      content: keyword,\n      readability: readability,\n      purpose: purpose,\n      strength: strength,\n    });\n\n    var requestOptions = {\n      method: 'POST',\n      headers: myHeaders,\n      body: raw,\n      redirect: 'follow'\n    };\n\n    // Initial fetch to submit the document\n    fetch(\"https://api.undetectable.ai/submit\", requestOptions)\n      .then(response => {\n        if (!response.ok) {\n          throw new Error(`HTTP error! status: ${response.status}`);\n        }\n        return response.json(); // Assuming the response contains JSON with document ID\n      })\n      .then(result => {\n        const documentId = result.id;\n        checkDocumentStatus(documentId, myHeaders, resolve, reject);\n      })\n      .catch(error => {\n        console.error('Error:', error);\n        reject(error);\n      });\n  });\n}\n\nfunction checkDocumentStatus(documentId, headers, resolve, reject) {\n  const checkInterval = 30000; // 30 seconds\n\n  const intervalId = setInterval(() => {\n    const raw = JSON.stringify({ \"id\": documentId });\n    const requestOptions = {\n      method: 'POST',\n      headers: headers,\n      body: raw,\n      redirect: 'follow'\n    };\n\n    fetch(\"https://api.undetectable.ai/document\", requestOptions)\n      .then(response => {\n        if (!response.ok) {\n          throw new Error(`HTTP error! status: ${response.status}`);\n        }\n        return response.json(); // Assuming the response JSON contains the document status\n      })\n      .then(result => {\n        if (result.status === 'ready') { // Replace 'ready' with the actual ready status value\n          clearInterval(intervalId);\n          resolve(result.document); // Assuming result contains the document data when ready\n        } else {\n          console.log('Document is not ready. Checking again in 30 seconds...');\n        }\n      })\n      .catch(error => {\n        console.error('Error:', error);\n        clearInterval(intervalId);\n        reject(error);\n      });\n  }, checkInterval);\n}\n",
+    "uuid": "3ad7c932-12a4-47e6-b2bc-5b02dd5f8c5b",
+    "emoji": "🧩",
+    "title": "Undetectable AI Integration",
+    "iconURL": "https://docs.undetectable.ai/images/logo-23a5b697.png",
+    "openaiSpec": {
+        "name": "humanizeContent",
+        "parameters": {
+            "type": "object",
+            "required": [
+                "APIKey",
+                "keyword"
+            ],
+            "properties": {
+                "APIKey": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "API Key for accessing the humanization service."
+                },
+                "keyword": {
+                    "type": "string",
+                    "description": "The search keyword"
+                },
+                "purpose": {
+                    "enum": [
+                        "General Writing",
+                        "Essay",
+                        "Article",
+                        "Marketing Material",
+                        "Story",
+                        "Cover Letter",
+                        "Report",
+                        "Business Material",
+                        "Legal Material"
+                    ],
+                    "type": "string",
+                    "description": "Default purpose for the text. Optional, default: \"General Writing\""
+                },
+                "strength": {
+                    "enum": [
+                        "Quality",
+                        "Balanced",
+                        "More Human"
+                    ],
+                    "type": "string",
+                    "description": "Increases aggressiveness of humanization algorithms. Optional, default: \"Balanced\""
+                },
+                "readability": {
+                    "enum": [
+                        "High School",
+                        "University",
+                        "Doctorate",
+                        "Journalist",
+                        "Marketing"
+                    ],
+                    "type": "string",
+                    "description": "Default readability level. Optional, default: \"High School\""
+                }
+            }
+        },
+        "description": "Configure the humanization settings for the Undetectable.AI API."
+    },
+    "outputType": "respond_to_ai",
+    "userSettings": [
+        {
+            "name": "APIKey",
+            "type": "password",
+            "label": "API Key"
+        },
+        {
+            "name": "readability",
+            "type": "enum",
+            "label": "Default readability",
+            "values": [
+                "High School",
+                "University",
+                "Doctorate",
+                "Journalist",
+                "Marketing"
+            ],
+            "description": "Optional, default: \"High School\""
+        },
+        {
+            "name": "purpose",
+            "type": "enum",
+            "label": "Default purpose",
+            "values": [
+                "General Writing",
+                "Essay",
+                "Article",
+                "Marketing Material",
+                "Story",
+                "Cover Letter",
+                "Report",
+                "Business Material",
+                "Legal Material"
+            ],
+            "description": "Optional, default: \"General Writing\""
+        },
+        {
+            "name": "strength",
+            "type": "enum",
+            "label": "Strength",
+            "values": [
+                "Quality",
+                "Balanced",
+                "More Human"
+            ],
+            "description": "Increases aggressiveness of humanization algorithms. Optional, default: \"Balanced\""
+        }
+    ],
+    "overviewMarkdown": "# Undetectable AI Integration\n\n## Overview\n\nUndetectable AI Integration is a TypingMind plugin designed to humanize AI-generated content using the powerful Undetectable.AI API. This plugin allows you to seamlessly transform machine-like text into natural, human-like prose, making your generated content more engaging and authentic.\n\n## Features\n\n- **Humanize Content**: Easily convert AI-generated text into human-like text by simply inputting your content.\n- **Seamless Integration**: Leverage the capabilities of Undetectable.AI directly within TypingMind.\n\n## How It Works\n\n1. **Input Text**: Enter the AI-generated text you wish to humanize.\n2. **API Call**: The plugin sends the text to the Undetectable.AI API endpoint for processing.\n3. **Humanized Output**: Receive the transformed, human-like text and use it as needed.\n\n## Setup Instructions\n\nTo configure this plugin, follow these simple steps:\n\n1. **Install the Plugin**: Import the plugin using the provided URL or GitHub link.\n2. **Configure API Key**: \n   - Obtain your API key from Undetectable.AI.\n   - Open the plugin settings and enter your API key to authenticate requests.\n\n## Configuration\n\n### API Key\n\nTo use the Undetectable AI Integration plugin, you need an API key from Undetectable.AI. If you don't have one, sign up on their platform to get your key.\n\n1. Go to the [Undetectable.AI Dashboard](https://undetectable.ai?_by=rhje5).\n2. Generate a new API key.\n3. Enter the API key in the plugin settings in TypingMind.\n\n## Usage\n\n1. **Navigate to the Plugin**: Find and open the Undetectable AI Integration plugin within TypingMind.\n2. **Enter Text**: Input the AI-generated text you want to humanize.\n3. **Humanize**: Click the \"Humanize\" button to convert the text.\n4. **Retrieve Output**: View and copy the humanized text from the output area.\n\n## Support\n\nIf you encounter any issues or have questions, please contact our support team or refer to the documentation on our [GitHub repository](https://github.com/thetemplateblog/UndetectableAI).\n\n## Contributors\n\n- **David Childs** - Developer\n\n## License\n\nThis plugin is licensed under the MIT License. See the [LICENSE](https://github.com/yourusername/yourrepository/blob/main/LICENSE) file for more details.\n",
+    "implementationType": "javascript"
+}
